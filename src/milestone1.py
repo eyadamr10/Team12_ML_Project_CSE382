@@ -4,6 +4,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import warnings 
 warnings.filterwarnings('ignore')
 
@@ -45,3 +48,16 @@ data_cleaner = ColumnTransformer(
         ('numerical', num_pipeline, num_cols),
         ('categorical', cat_pipeline, cat_cols)
     ])
+
+print("\n--- TASK A: REGRESSION (Baseline) ---")
+price_model = Pipeline(steps=[
+    ('preprocessor', data_cleaner),
+    ('regressor', LinearRegression())
+])
+
+price_model.fit(features_train, price_train) 
+predicted_prices = price_model.predict(features_val)
+
+print(f"MAE:  {mean_absolute_error(price_val, predicted_prices):.2f}")
+print(f"RMSE: {np.sqrt(mean_squared_error(price_val, predicted_prices)):.2f}")
+print(f"R2:   {r2_score(price_val, predicted_prices):.2f}")
