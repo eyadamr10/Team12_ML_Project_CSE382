@@ -1,6 +1,10 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
-import warnings
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+import warnings 
 warnings.filterwarnings('ignore')
 
 print("Loading data...")
@@ -20,3 +24,24 @@ cancel_target = booking_data['IsCanceled']
 features_train, features_val, price_train, price_val, cancel_train, cancel_val = train_test_split(
     features, price_target, cancel_target, test_size=0.2, random_state=42
 )
+
+
+print("\nBuilding Preprocessing Pipelines...")
+num_cols = features.select_dtypes(include=['int64', 'float64']).columns
+cat_cols = features.select_dtypes(include=['object']).columns
+
+num_pipeline = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='median')),
+    ('scaler', StandardScaler())
+])
+
+cat_pipeline = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
+    ('encoder', OneHotEncoder(handle_unknown='ignore'))
+])
+
+data_cleaner = ColumnTransformer(
+    transformers=[
+        ('numerical', num_pipeline, num_cols),
+        ('categorical', cat_pipeline, cat_cols)
+    ])
