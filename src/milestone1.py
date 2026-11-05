@@ -9,6 +9,8 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
 import warnings 
 warnings.filterwarnings('ignore')
 
@@ -78,3 +80,21 @@ print(f"Accuracy:  {accuracy_score(cancel_val, predicted_cancels):.2f}")
 print(f"Precision: {precision_score(cancel_val, predicted_cancels):.2f}")
 print(f"Recall:    {recall_score(cancel_val, predicted_cancels):.2f}")
 print(f"F1-score:  {f1_score(cancel_val, predicted_cancels):.2f}")
+
+print("\n--- TASK C: CLUSTERING (Baseline) ---")
+segment_cols = ['LeadTime', 'StaysInWeekendNights', 'StaysInWeekNights', 'Adults', 'PreviousCancellations']
+segmentation_data = booking_data[segment_cols].dropna()
+
+segmentation_sample = segmentation_data.sample(n=10000, random_state=42)
+
+segmentation_model = Pipeline(steps=[
+    ('scaler', StandardScaler()),
+    ('kmeans', KMeans(n_clusters=3, random_state=42, n_init=10))
+])
+
+cluster_labels = segmentation_model.fit_predict(segmentation_sample)
+scaled_sample = segmentation_model.named_steps['scaler'].transform(segmentation_sample)
+sil_score = silhouette_score(scaled_sample, cluster_labels)
+
+print(f"K-Means (k=3) Silhouette Score: {sil_score:.2f}")
+print("\nMilestone 1 execution complete!")
